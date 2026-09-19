@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Happy Birthday!</title>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh; display: flex; justify-content: center; align-items: center;
+      background: linear-gradient(-45deg, #ff0844, #ff4e50, #9b51e0, #ff758c); background-size: 400% 400%;
+      animation: gradientBG 8s ease infinite; font-family: 'Segoe UI', Tahoma, sans-serif;
+      text-align: center; padding: 20px; overflow: hidden; position: relative;
+    }
+    @keyframes gradientBG { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+    
+    /* FLOATING BACKGROUND */
+    .bg-animation { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+    .bg-item { position: absolute; bottom: -80px; animation: floatUpFast linear infinite; opacity: 0.85; }
+    @keyframes floatUpFast {
+      0% { transform: translateY(0) rotate(0deg) scale(0.8); opacity: 0; }
+      20%, 80% { opacity: 0.9; }
+      100% { transform: translateY(-115vh) rotate(360deg) scale(1.2); opacity: 0; }
+    }
+
+    /* CARD STYLING */
+    .card {
+      background: rgba(255, 255, 255, 0.92); padding: 40px 25px; border-radius: 24px;
+      box-shadow: 0 0 35px rgba(255, 255, 255, 0.5), 0 15px 35px rgba(0, 0, 0, 0.25);
+      max-width: 480px; width: 100%; backdrop-filter: blur(12px); z-index: 2;
+      position: relative; animation: popIn 0.5s ease-out; min-height: 280px;
+    }
+    @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+    .badge {
+      display: inline-block; background: linear-gradient(45deg, #ff0844, #9b51e0); color: #fff;
+      padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(255,8,68,0.3);
+    }
+    h1, h2 { color: #2d3436; font-size: 2.2rem; margin-bottom: 15px; line-height: 1.2; }
+    h2 { font-size: 1.6rem; }
+    .wish-text { color: #4a4a4a; font-size: 1.1rem; line-height: 1.6; margin-bottom: 20px; }
+    .bold-wish { font-weight: 700; font-size: 1.25rem; color: #2d3436; }
+    
+    .button-group { display: flex; justify-content: center; gap: 15px; margin-top: 15px; }
+    .btn {
+      color: #fff; border: none; padding: 14px 28px; font-size: 1rem; font-weight: 700;
+      border-radius: 50px; cursor: pointer; transition: transform 0.15s, background 0.2s, top 0.25s, left 0.25s;
+      outline: none; -webkit-tap-highlight-color: transparent; min-width: 110px;
+    }
+    .btn:active { transform: scale(0.92); }
+    .btn-yes { background: linear-gradient(45deg, #11998e, #38ef7d); box-shadow: 0 4px 15px rgba(56,239,125,0.4); }
+    .btn-no { background: linear-gradient(45deg, #ff0844, #ff4e50); box-shadow: 0 4px 15px rgba(255,8,68,0.4); }
+    #noBtn2.btn-hopped-inside { position: absolute !important; z-index: 100; }
+    .btn-celebrate, .btn-back { background: linear-gradient(45deg, #ff0844, #9b51e0); box-shadow: 0 4px 20px rgba(155,81,224,0.5); width: 100%; margin-top: 15px; }
+
+    .hint-msg { display: none; color: #ff0844; font-size: 0.95rem; font-weight: 700; margin-top: 15px; }
+
+    /* PENGUIN CARDS */
+    .penguin-grid { display: flex; justify-content: space-around; gap: 10px; margin: 20px 0 10px 0; }
+    .penguin-card {
+      background: rgba(255, 255, 255, 0.85); border: 2px solid #9b51e0; border-radius: 16px;
+      padding: 15px 8px; cursor: pointer; flex: 1; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+    .penguin-card.opened { border-color: #38ef7d; background: rgba(235, 255, 240, 0.9); }
+    .penguin-card:hover { transform: translateY(-5px) scale(1.05); box-shadow: 0 8px 20px rgba(155,81,224,0.3); }
+    .penguin-icon { font-size: 2.8rem; margin-bottom: 8px; display: inline-block; animation: wiggleBounce 2.5s infinite ease-in-out; }
+    .penguin-card:hover .penguin-icon { animation: fastWiggle 0.4s infinite ease-in-out; }
+
+    @keyframes wiggleBounce { 0%, 100% { transform: translateY(0) rotate(0deg); } 25% { transform: translateY(-6px) rotate(-8deg); } 75% { transform: translateY(-6px) rotate(8deg); } }
+    @keyframes fastWiggle { 0%, 100% { transform: rotate(-12deg) scale(1.1); } 50% { transform: rotate(12deg) scale(1.1); } }
+    .penguin-title { font-size: 0.85rem; font-weight: 700; color: #2d3436; }
+    .status-badge { font-size: 0.75rem; color: #888; margin-top: 4px; }
+    .penguin-card.opened .status-badge { color: #11998e; font-weight: 700; }
+
+    .hidden { display: none !important; }
+    @media (max-width: 480px) { h1 { font-size: 1.8rem; } h2 { font-size: 1.4rem; } .card { padding: 30px 18px; } .penguin-icon { font-size: 2.2rem; } }
+  </style>
+</head>
+<body>
+
+  <div class="bg-animation" id="bgAnim"></div>
+
+  <!-- CARD 1 -->
+  <div class="card" id="card1">
+    <span class="badge">Quiz Time! ✨</span>
+    <p class="wish-text bold-wish" style="margin-top: 15px;">it is a very special day today, isn't it? 🤔</p>
+    <div class="button-group">
+      <button class="btn btn-no" onclick="switchCard('card1','cardReject')">No</button>
+      <button class="btn btn-yes" onclick="switchCard('card1','card2')">Yes!</button>
+    </div>
+  </div>
+
+  <!-- REJECTION CARD -->
+  <div class="card hidden" id="cardReject">
+    <span class="badge">Wdym ?</span>
+    <h2>Huh! 😒 😑 🙄</h2>
+    <p class="wish-text bold-wish">it is a very special day!!!</p>
+    <button class="btn btn-celebrate" onclick="switchCard('cardReject','card1')">Try Again 🔄</button>
+  </div>
+
+  <!-- CARD 2 -->
+  <div class="card hidden" id="card2">
+    <span class="badge">Almost There! ❤</span>
+    <h2>One last question...</h2>
+    <p class="wish-text">are you ready / excited ? 🎁</p>
+    <div class="button-group">
+      <button class="btn btn-no" id="noBtn2" onclick="document.getElementById('hint2').style.display='block'">No</button>
+      <button class="btn btn-yes" onclick="switchCard('card2','cardPenguins')">Yes!</button>
+    </div>
+    <div class="hint-msg" id="hint2">(Hint: Come on, it's going to be great! ✨)</div>
+  </div>
+
+  <!-- PENGUINS SELECTION -->
+  <div class="card hidden" id="cardPenguins">
+    <span class="badge">Secret Messages 🐧</span>
+    <h2>Choose one of these...</h2>
+    <p class="wish-text" id="penguinSubtext">All of them have a message for you! ✨</p>
+    <div class="penguin-grid">
+      <div class="penguin-card" id="pCard1" onclick="openPenguin(1)"><div class="penguin-icon">🐧</div><div class="penguin-title">Penguin #1</div><div class="status-badge" id="badge1">Tap to view</div></div>
+      <div class="penguin-card" id="pCard2" onclick="openPenguin(2)"><div class="penguin-icon">🐧</div><div class="penguin-title">Penguin #2</div><div class="status-badge" id="badge2">Tap to view</div></div>
+      <div class="penguin-card" id="pCard3" onclick="openPenguin(3)"><div class="penguin-icon">🐧</div><div class="penguin-title">Penguin #3</div><div class="status-badge" id="badge3">Tap to view</div></div>
+    </div>
+    <button class="btn btn-celebrate hidden" id="toFinalBtn" onclick="switchCard('cardPenguins','card3'); triggerConfetti()">Continue to Celebration! 🎉</button>
+  </div>
+
+  <!-- PENGUIN MESSAGE -->
+  <div class="card hidden" id="cardPenguinMessage">
+    <span class="badge">Special Message 💌</span>
+    <h2 id="msgHeader" style="margin-top: 15px;">Penguin Message</h2>
+    <p class="wish-text" id="msgContent" style="font-weight: 600; font-size: 1.05rem; margin-bottom: 25px; white-space: pre-line; text-align: left;"></p>
+    <button class="btn btn-back" onclick="closePenguin()">Back to Penguins 🐧</button>
+  </div>
+
+  <!-- FINAL CARD -->
+  <div class="card hidden" id="card3">
+    <span class="badge">Special Day ⭐</span>
+    <h1>Happy Birthday! 🎉</h1>
+    <p class="wish-text">Wishing you a day filled with laughter, joy, and unforgettable moments.</p>
+    <button class="btn btn-celebrate" onclick="triggerConfetti()">Tap for More Sparkles! ✨</button>
+  </div>
+
+  <script>
+    // Generate BG Elements Dynamically
+    const bgAnim = document.getElementById('bgAnim');
+    const emojis = ['💖','🎂','✨','🎁','⭐','🎈','💖','🎉','🥳','🍰','🌟','💖','🎁','✨','🎂','🎈','⭐','💖','🎉','🥳'];
+    emojis.forEach((emoji, i) => {
+      const span = document.createElement('span');
+      span.className = 'bg-item';
+      span.textContent = emoji;
+      span.style.cssText = `left:${(i * 4.8) % 95}%; font-size:${1.7 + (i % 5) * 0.2}rem; animation-duration:${3.1 + (i % 4) * 0.5}s; animation-delay:${(i * 0.3) % 2.5}s;`;
+      bgAnim.appendChild(span);
+    });
+
+    let hopStep = 0, viewedPenguins = new Set();
+    const msgs = {
+      1: ["Penguin #1", "HAPPY BIRTHDAY MR SINGH 🎉\n\nfinally aap 18 saal ke ho hi gaye , bachke rehna kahi koi birthday bombs dene ke chakar mei bhadas na nikal de haha (ignore pls)\n\ni wish apka din acha jaye , saal acha jaye , jeevan hi acha jaye bs mere sath jaye anyways coming to topic happy birthday , enjoy ur day ✨"],
+      2: ["Penguin #2", "Hello , just wanted to let you know that tu bahot special hai mere liye and i am very grateful to have you in my life , for your friendship and all the memories we share ❤️\n\napna dhyan rkha kr budbak and kisi cheez ka zayada stress mat lena and also you r THE most amazing person i have ever met ✨"],
+      3: ["Penguin #3", "once again Happy Birthday alok , mr singh , tharkulla , chasmish , chomu , bhondu , elongated sperm , chotu , bacha , aluu and pidda 🥳\n\nasha krti hu bhagwan tujhe budhi pradan kre and Gayatri bhawa balak\n\nalso i miss you a lot and remember tht that i am always there for you <3 and i lysm ❤️"]
+    };
+
+    // Button Hop Logic
+    const noBtn2 = document.getElementById('noBtn2');
+    const moveHop = (e) => {
+      if (e.type === 'touchstart') e.preventDefault();
+      const card2 = document.getElementById('card2');
+      if (!noBtn2.classList.contains('btn-hopped-inside')) {
+        noBtn2.classList.add('btn-hopped-inside');
+        card2.appendChild(noBtn2);
+      }
+      const cW = card2.offsetWidth, cH = card2.offsetHeight, bW = noBtn2.offsetWidth || 110, bH = noBtn2.offsetHeight || 48;
+      const off = 40, cX = cW / 2 - bW / 2, cY = cH / 2 - bH / 2;
+      const pos = [[cX, cY - off], [cX, cY + off], [cX + off, cY], [cX - off, cY]][hopStep++ % 4];
+      noBtn2.style.left = `${Math.max(15, Math.min(cW - bW - 15, pos[0]))}px`;
+      noBtn2.style.top = `${Math.max(15, Math.min(cH - bH - 15, pos[1]))}px`;
+    };
+    ['mouseenter', 'touchstart'].forEach(evt => noBtn2.addEventListener(evt, moveHop));
+
+    function switchCard(hide, show) {
+      document.getElementById(hide).classList.add('hidden');
+      const s = document.getElementById(show);
+      s.classList.remove('hidden');
+      s.style.animation = 'none';
+      s.offsetHeight;
+      s.style.animation = 'popIn 0.5s ease-out';
+    }
+
+    function openPenguin(num) {
+      viewedPenguins.add(num);
+      document.getElementById(`pCard${num}`).classList.add('opened');
+      document.getElementById(`badge${num}`).textContent = 'Viewed ✓';
+      document.getElementById('msgHeader').textContent = msgs[num][0];
+      document.getElementById('msgContent').textContent = msgs[num][1];
+      switchCard('cardPenguins', 'cardPenguinMessage');
+      triggerConfetti();
+    }
+
+    function closePenguin() {
+      switchCard('cardPenguinMessage', 'cardPenguins');
+      if (viewedPenguins.size === 3) {
+        document.getElementById('toFinalBtn').classList.remove('hidden');
+        document.getElementById('penguinSubtext').textContent = "You unlocked all messages! 🎉";
+      }
+    }
+
+    function triggerConfetti() {
+      if (typeof confetti === 'function') confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
+    }
+  </script>
+</body>
+</html>
